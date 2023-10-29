@@ -1,0 +1,57 @@
+ARCH         = test
+
+TOPdir       = /app/hpl-2.3
+INCdir       = $(TOPdir)/include
+BINdir       = $(TOPdir)/bin/$(ARCH)
+LIBdir       = $(TOPdir)/lib/$(ARCH)
+HPLlib       = $(LIBdir)/libhpl.a
+MPdir        = /usr/local/mpi
+MPinc        = -I$(MPdir)/include
+MPlib        = $(MPdir)/lib/libmpich.a
+
+LAdir        = /app/BLAS-3.11.0
+LAinc        =
+LAlib        = $(LAdir)/libcblas.a $(LAdir)/libatlas.a
+F2CDEFS      =
+#
+# ----------------------------------------------------------------------
+# - HPL includes / libraries / specifics -------------------------------
+# ----------------------------------------------------------------------
+#
+HPL_INCLUDES = -I$(INCdir) -I$(INCdir)/$(ARCH) $(LAinc) $(MPinc)
+HPL_LIBS     = $(HPLlib) $(LAlib) $(MPlib)
+#
+# - Compile time options -----------------------------------------------
+#
+# -DHPL_COPY_L           force the copy of the panel L before bcast;
+# -DHPL_CALL_CBLAS       call the cblas interface;
+# -DHPL_CALL_VSIPL       call the vsip  library;
+# -DHPL_DETAILED_TIMING  enable detailed timers;
+#
+# By default HPL will:
+#    *) not copy L before broadcast,
+#    *) call the Fortran 77 BLAS interface
+#    *) not display detailed timing information.
+#
+HPL_OPTS     = -DHPL_CALL_CBLAS
+#
+# ----------------------------------------------------------------------
+#
+HPL_DEFS     = $(F2CDEFS) $(HPL_OPTS) $(HPL_INCLUDES)
+#
+# ----------------------------------------------------------------------
+# - Compilers / linkers - Optimization flags ---------------------------
+# ----------------------------------------------------------------------
+#
+CC           = /usr/bin/gcc
+CCNOOPT      = $(HPL_DEFS)
+CCFLAGS      = $(HPL_DEFS) -fomit-frame-pointer -O3 -funroll-loops -W -Wall
+#
+LINKER       = /usr/bin/gcc
+LINKFLAGS    = $(CCFLAGS)
+#
+ARCHIVER     = ar
+ARFLAGS      = r
+RANLIB       = echo
+#
+# ----------------------------------------------------------------------

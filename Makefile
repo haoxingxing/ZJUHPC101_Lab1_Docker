@@ -22,7 +22,7 @@ PLAT = LINUX
 # Libraries and includs
 #-----------------------------------------------------------------------------
 
-BLLIB = /app/BLAS-3.11.0/libblas_LINUX.a
+BLLIB = /app/BLAS-3.11.0/blas_LINUX.a
 CBLIB = /app/cblas.a
 
 #-----------------------------------------------------------------------------

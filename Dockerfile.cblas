@@ -1,0 +1,30 @@
+FROM debian:squeeze
+RUN echo deb http://archive.debian.org/debian/ squeeze contrib main non-free > /etc/apt/sources.list
+RUN apt-get update && apt-get install --force-yes -y --no-install-recommends \
+    bzip2 make m4 file pkg-config libexpat1-dev zlib1g-dev gettext vim-tiny \
+    net-tools gawk rsync libbz2-dev libreadline-dev gfortran openssh-server sshpass libglu1-mesa-dev man xz-utils patch \
+    libxt-dev build-essential libxtst6 wget libxrender1 libxi6 unzip libc6=2.11.3-4 libc-bin=2.11.3-4 perl-modules \
+    && apt-get clean && apt-get remove -y --purge mawk && rm -rf /var/lib/apt/lists/* && rm -rf /usr/share/locale
+
+WORKDIR /app
+RUN wget http://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.6.tar.gz && tar xvf openmpi-4.1.6.tar.gz && cd openmpi-4.1.6 && ./configure --prefix=/app/mpi && make all -j$(nproc)  && make install && ldconfig
+
+# ssl 版本过期
+COPY blas-3.11.0.tgz blas-3.11.0.tgz 
+COPY cblas.tgz cblas.tgz
+COPY hpl-2.3.tar.gz hpl-2.3.tar.gz
+
+RUN  tar xvf blas-3.11.0.tgz && cd BLAS-3.11.0 && make  -j$(nproc) 
+RUN  tar xvf cblas.tgz
+RUN tar xvf hpl-2.3.tar.gz 
+
+COPY Makefile /app/CBLAS/Makefile.in
+RUN cd CBLAS && make
+
+COPY Make.Linux_HPC.cblas /app/hpl-2.3/Make.Linux_HPC
+RUN cd hpl-2.3 && make arch=Linux_HPC && make install arch=Linux_HPC
+
+RUN echo 'PermitRootLogin=yes'  |  tee -a /etc/ssh/sshd_config
+RUN echo 'root:ZJUMPILAB!' | chpasswd
+EXPOSE 22
+CMD ["service", "ssh", "start", "-D"]
